@@ -23,7 +23,7 @@ type MultimediaItem struct {
 	CreatedAt *string
 }
 
-func NewMultimediaItem(bucket *string, filename *string, fileType *string) (*MultimediaItem, error) {
+func NewMultimediaItem(bucket, filename, fileType *string) (*MultimediaItem, error) {
 	multimediaItem := &MultimediaItem{
 		Bucket:   bucket,
 		Filename: filename,
@@ -50,9 +50,20 @@ type Removable interface {
 	Remove(ID *string) error
 }
 
+type Findable interface {
+	Find(ID *string) (*MultimediaItem, error)
+}
+
+type BasicRepository interface {
+	Storable
+	Removable
+	Findable
+}
+
 type DynamoDBRepository interface {
 	PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
 	DeleteItem(input *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error)
+	GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error)
 }
 
 type AWSPersistenceManager struct {
@@ -81,10 +92,11 @@ func (manager *AWSPersistenceManager) Store(item *MultimediaItem) error {
 	input := dynamodb.PutItemInput{
 		TableName: manager.TableName,
 		Item: map[string]*dynamodb.AttributeValue{
-			"id":         &dynamodb.AttributeValue{S: &ID},
-			"bucket":     &dynamodb.AttributeValue{S: item.Bucket},
-			"filename":   &dynamodb.AttributeValue{S: item.Filename},
-			"created_at": &dynamodb.AttributeValue{S: item.CreatedAt},
+			"id":        &dynamodb.AttributeValue{S: &ID},
+			"bucket":    &dynamodb.AttributeValue{S: item.Bucket},
+			"filename":  &dynamodb.AttributeValue{S: item.Filename},
+			"type":      &dynamodb.AttributeValue{S: item.Type},
+			"createdAt": &dynamodb.AttributeValue{S: item.CreatedAt},
 		},
 	}
 
@@ -107,4 +119,27 @@ func (manager *AWSPersistenceManager) Remove(ID *string) error {
 	})
 
 	return err
+}
+
+func (manager *AWSPersistenceManager) Find(ID *string) (*MultimediaItem, error) {
+	output, err := manager.DynamoDB.GetItem(&dynamodb.GetItemInput{
+		Key:       map[string]*dynamodb.AttributeValue{"id": &dynamodb.AttributeValue{S: ID}},
+		TableName: manager.TableName,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if output.Item == nil {
+		return nil, nil
+	}
+
+	return &MultimediaItem{
+		ID:        output.Item["id"].S,
+		Bucket:    output.Item["bucket"].S,
+		Filename:  output.Item["filename"].S,
+		Type:      output.Item["type"].S,
+		CreatedAt: output.Item["createdAt"].S,
+	}, nil
 }

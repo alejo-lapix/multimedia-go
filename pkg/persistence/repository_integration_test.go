@@ -12,7 +12,7 @@ import (
 
 var runIntegrationTest = os.Getenv("INTEGRATION_TEST")
 var awsRegion = os.Getenv("AWS_REGION")
-var tableName = "example"
+var tableName = "testing"
 var insertedId = ""
 
 func TestIntegrationAWSPersistenceManager_Store(t *testing.T) {

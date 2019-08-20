@@ -13,11 +13,13 @@ import (
 type S3Client interface {
 	PutObject(*s3.PutObjectInput) (*s3.PutObjectOutput, error)
 	GetObject(*s3.GetObjectInput) (*s3.GetObjectOutput, error)
+	DeleteObject(input *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error)
 }
 
 type Provider interface {
-	Store(currentPath *string, newPath *string) (bool, error)
+	Store(currentPath *string, newPath *string) error
 	Read(path *string) ([]byte, error)
+	Remove(filename *string) error
 }
 
 type FileOpener interface {
@@ -46,11 +48,11 @@ func (opener *OSFileOpener) Open(filename string) (*os.File, error) {
 }
 
 // Store put an object in the given S3 Bucket
-func (provider *AWSProvider) Store(filename *string, destination *string) (bool, error) {
+func (provider *AWSProvider) Store(filename *string, destination *string) error {
 	file, err := provider.Opener.Open(*filename)
 
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	defer file.Close()
@@ -58,7 +60,7 @@ func (provider *AWSProvider) Store(filename *string, destination *string) (bool,
 	fileInfo, err := file.Stat()
 
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	var size = fileInfo.Size()
@@ -66,7 +68,7 @@ func (provider *AWSProvider) Store(filename *string, destination *string) (bool,
 	_, err = file.Read(buffer)
 
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	_, err = provider.S3.PutObject(&s3.PutObjectInput{
@@ -81,7 +83,7 @@ func (provider *AWSProvider) Store(filename *string, destination *string) (bool,
 		ServerSideEncryption: aws.String("AES256"),
 	})
 
-	return err == nil, err
+	return err
 }
 
 // Read reads an element from aws
@@ -105,4 +107,13 @@ func (provider *AWSProvider) Read(path *string) ([]byte, error) {
 	buffer = nil
 
 	return buffer, err
+}
+
+func (provider *AWSProvider) Remove(filename *string) error {
+	_, err := provider.S3.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: provider.Bucket,
+		Key:    filename,
+	})
+
+	return err
 }

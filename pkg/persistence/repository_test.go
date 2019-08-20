@@ -110,20 +110,13 @@ func TestAWSPersistenceManager_Store(t *testing.T) {
 			},
 			args: args{
 				item: &MultimediaItem{
-					Bucket:   aws.String("http://example.com"),
-					Filename: aws.String("example.pdf"),
-					Type:     aws.String(PDF),
+					Bucket:    aws.String("http://example.com"),
+					Filename:  aws.String("example.pdf"),
+					Type:      aws.String(PDF),
+					CreatedAt: aws.String(time.Now().Format(time.RFC3339)),
 				},
 			},
 			wantErr: false,
-		},
-		{
-			name: "Must return an error if DynamoDB Fails",
-			fields: fields{
-				DynamoDB:  &DynamoDBSuccess{},
-				TableName: aws.String("example"),
-			},
-			args: args{item: &MultimediaItem{}},
 		},
 	}
 	for _, tt := range tests {
@@ -200,7 +193,11 @@ func (err InvalidArguments) Error() string {
 type DynamoDBSuccess struct{}
 
 func (dynamo *DynamoDBSuccess) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
-	if input.Item["id"] == nil || input.Item["bucket"] == nil || input.Item["filename"] == nil || input.Item["created_at"] == nil {
+	if input.TableName == nil {
+		return nil, InvalidArguments{Message: aws.String("TableName can not be nil")}
+	}
+
+	if input.Item["id"].S == nil || input.Item["bucket"].S == nil || input.Item["filename"].S == nil || input.Item["created_at"].S == nil || input.Item["type"].S == nil {
 		return nil, InvalidArguments{Message: aws.String("Some Attribute were not send to dynamo")}
 	}
 
@@ -208,6 +205,10 @@ func (dynamo *DynamoDBSuccess) PutItem(input *dynamodb.PutItemInput) (*dynamodb.
 }
 
 func (dynamo *DynamoDBSuccess) DeleteItem(input *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error) {
+	if input.Key["id"].S == nil || *input.Key["id"].S == "" {
+		return nil, InvalidArguments{Message: aws.String("The ID value can not be empty")}
+	}
+
 	return &dynamodb.DeleteItemOutput{}, nil
 }
 

@@ -33,14 +33,11 @@ func TestIntegrationAwsProvider_Store(t *testing.T) {
 	}
 
 	t.Logf("Reading File %v", filenameToStore)
-	got, err := provider.Store(&filenameToStore, &uploadedFileName)
+	err = provider.Store(&filenameToStore, &uploadedFileName)
 
 	if err != nil {
 		t.Errorf("Store() error = %+v", err)
 		return
-	}
-	if !reflect.DeepEqual(got, true) {
-		t.Errorf("Store() got = %+v, want %t", got, true)
 	}
 }
 

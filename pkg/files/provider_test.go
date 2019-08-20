@@ -91,7 +91,6 @@ func TestAwsProvider_Store(t *testing.T) {
 				currentPath: aws.String("/example/implementation"),
 				newPath:     aws.String(""),
 			},
-			want:    false,
 			wantErr: true,
 		},
 	}
@@ -102,13 +101,10 @@ func TestAwsProvider_Store(t *testing.T) {
 				Bucket: tt.fields.Bucket,
 				Opener: &OSFileOpener{},
 			}
-			got, err := provider.Store(tt.args.currentPath, tt.args.newPath)
+			err := provider.Store(tt.args.currentPath, tt.args.newPath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Store() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-			if got != tt.want {
-				t.Errorf("Store() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
