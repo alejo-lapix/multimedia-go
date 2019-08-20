@@ -1,7 +1,11 @@
 package persitence
 
 import (
+	"fmt"
+	"strings"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/uuid"
@@ -52,6 +56,7 @@ type Removable interface {
 
 type Findable interface {
 	Find(ID *string) (*MultimediaItem, error)
+	FindMany([]string) (*[]MultimediaItem, error)
 }
 
 type BasicRepository interface {
@@ -64,6 +69,7 @@ type DynamoDBRepository interface {
 	PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
 	DeleteItem(input *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error)
 	GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error)
+	Query(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error)
 }
 
 type AWSPersistenceManager struct {
@@ -135,11 +141,45 @@ func (manager *AWSPersistenceManager) Find(ID *string) (*MultimediaItem, error) 
 		return nil, nil
 	}
 
+	return mapItemOutput(output.Item), nil
+}
+
+func mapItemOutput(output map[string]*dynamodb.AttributeValue) *MultimediaItem {
 	return &MultimediaItem{
-		ID:        output.Item["id"].S,
-		Bucket:    output.Item["bucket"].S,
-		Filename:  output.Item["filename"].S,
-		Type:      output.Item["type"].S,
-		CreatedAt: output.Item["createdAt"].S,
-	}, nil
+		ID:        output["id"].S,
+		Bucket:    output["bucket"].S,
+		Filename:  output["filename"].S,
+		Type:      output["type"].S,
+		CreatedAt: output["createdAt"].S,
+	}
+}
+
+func (manager *AWSPersistenceManager) FindMany(ids []*string) ([]*MultimediaItem, error) {
+	attributeValues := make(map[string]*dynamodb.AttributeValue, len(ids))
+	conditionExpression := make([]string, len(ids))
+
+	for index, id := range ids {
+		queryValue := fmt.Sprintf(":v%v", index+1)
+
+		attributeValues[queryValue] = &dynamodb.AttributeValue{S: id}
+		conditionExpression[index] = queryValue
+	}
+
+	output, err := manager.DynamoDB.Query(&dynamodb.QueryInput{
+		TableName:                 manager.TableName,
+		FilterExpression:          aws.String(fmt.Sprintf("id IN (%v)", strings.Join(conditionExpression, ","))),
+		ExpressionAttributeValues: attributeValues,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*MultimediaItem, len(output.Items))
+
+	for index, item := range output.Items {
+		result[index] = mapItemOutput(item)
+	}
+
+	return result, nil
 }
