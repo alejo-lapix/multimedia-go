@@ -1,14 +1,15 @@
 package files
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"runtime"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 var runIntegrationTest = os.Getenv("INTEGRATION_TEST")
@@ -75,24 +76,14 @@ func TestIntegrationAwsProvider_Read(t *testing.T) {
 	}
 }
 
-func awsProvider() (*AwsProvider, error) {
+func awsProvider() (*AWSProvider, error) {
 	sess, err := newSession()
 
 	if err != nil {
 		return nil, err
 	}
 
-	return NewAwsProvider(&awsBucket, s3.New(sess)), nil
-}
-
-func newS3() *s3.S3 {
-	sess, err := newSession()
-
-	if err != nil {
-		panic(err)
-	}
-
-	return s3.New(sess)
+	return NewAWSProvider(&awsBucket, s3.New(sess)), nil
 }
 
 func newSession() (*session.Session, error) {

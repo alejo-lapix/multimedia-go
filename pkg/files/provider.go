@@ -2,11 +2,12 @@ package files
 
 import (
 	"bytes"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 type S3Client interface {
@@ -23,29 +24,29 @@ type FileOpener interface {
 	Open(string) (*os.File, error)
 }
 
-type AwsProvider struct {
+type AWSProvider struct {
 	S3     S3Client
 	Opener FileOpener
 	Bucket *string
 }
 
-// NewProvider return a new AwsProvider
-func NewAwsProvider(bucket *string, s3 *s3.S3) *AwsProvider {
-	return &AwsProvider{
+// NewProvider return a new AWSProvider
+func NewAWSProvider(bucket *string, s3 *s3.S3) *AWSProvider {
+	return &AWSProvider{
 		S3:     s3,
-		Opener: &OsFileOpener{},
+		Opener: &OSFileOpener{},
 		Bucket: bucket,
 	}
 }
 
-type OsFileOpener struct{}
+type OSFileOpener struct{}
 
-func (opener *OsFileOpener) Open(filename string) (*os.File, error) {
+func (opener *OSFileOpener) Open(filename string) (*os.File, error) {
 	return os.Open(filename)
 }
 
 // Store put an object in the given S3 Bucket
-func (provider *AwsProvider) Store(filename *string, destination *string) (bool, error) {
+func (provider *AWSProvider) Store(filename *string, destination *string) (bool, error) {
 	file, err := provider.Opener.Open(*filename)
 
 	if err != nil {
@@ -84,7 +85,7 @@ func (provider *AwsProvider) Store(filename *string, destination *string) (bool,
 }
 
 // Read reads an element from aws
-func (provider *AwsProvider) Read(path *string) ([]byte, error) {
+func (provider *AWSProvider) Read(path *string) ([]byte, error) {
 	output, err := provider.S3.GetObject(&s3.GetObjectInput{
 		Bucket: provider.Bucket,
 		Key:    path,

@@ -1,10 +1,11 @@
 package files
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"multimedia/pkg/files/testdata/src"
 	"reflect"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 func TestAwsProvider_Read(t *testing.T) {
@@ -46,7 +47,7 @@ func TestAwsProvider_Read(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			provider := &AwsProvider{
+			provider := &AWSProvider{
 				S3:     tt.fields.S3,
 				Bucket: tt.fields.Bucket,
 			}
@@ -96,10 +97,10 @@ func TestAwsProvider_Store(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			provider := &AwsProvider{
+			provider := &AWSProvider{
 				S3:     tt.fields.S3,
 				Bucket: tt.fields.Bucket,
-				Opener: &OsFileOpener{},
+				Opener: &OSFileOpener{},
 			}
 			got, err := provider.Store(tt.args.currentPath, tt.args.newPath)
 			if (err != nil) != tt.wantErr {
