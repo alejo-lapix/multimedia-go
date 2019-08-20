@@ -3,6 +3,7 @@ package persitence
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 
@@ -56,9 +57,10 @@ func TestNewItem(t *testing.T) {
 				fileType: aws.String(SOUND),
 			},
 			want: &MultimediaItem{
-				Bucket:   aws.String("http://example.com"),
-				Filename: aws.String("example"),
-				Type:     aws.String(SOUND),
+				Bucket:    aws.String("http://example.com"),
+				Filename:  aws.String("example"),
+				Type:      aws.String(SOUND),
+				CreatedAt: aws.String(time.Now().Format(time.RFC3339)),
 			},
 			wantErr: false,
 		},
@@ -134,7 +136,7 @@ func TestAWSPersistenceManager_Store(t *testing.T) {
 				t.Errorf("Store() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if tt.wantErr == (tt.args.item.ID == nil) {
+			if tt.wantErr != (tt.args.item.ID == nil) {
 				t.Errorf("Store() if it does not expect an error the ID's value must not be nil")
 			}
 		})
@@ -187,9 +189,21 @@ func TestAWSPersistenceManager_Remove(t *testing.T) {
 	}
 }
 
+type InvalidArguments struct {
+	Message *string
+}
+
+func (err InvalidArguments) Error() string {
+	return *err.Message
+}
+
 type DynamoDBSuccess struct{}
 
 func (dynamo *DynamoDBSuccess) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
+	if input.Item["id"] == nil || input.Item["bucket"] == nil || input.Item["filename"] == nil || input.Item["created_at"] == nil {
+		return nil, InvalidArguments{Message: aws.String("Some Attribute were not send to dynamo")}
+	}
+
 	return &dynamodb.PutItemOutput{}, nil
 }
 

@@ -1,6 +1,8 @@
 package persitence
 
 import (
+	"time"
+
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/uuid"
 	"gopkg.in/go-playground/validator.v9"
@@ -14,10 +16,11 @@ const (
 )
 
 type MultimediaItem struct {
-	ID       *string
-	Bucket   *string `validate:"required,url"`
-	Filename *string `validate:"required"`
-	Type     *string `validate:"required,oneof=sound image pdf"`
+	ID        *string
+	Bucket    *string `validate:"required,url"`
+	Filename  *string `validate:"required"`
+	Type      *string `validate:"required,oneof=sound image pdf"`
+	CreatedAt *string
 }
 
 func NewMultimediaItem(bucket *string, filename *string, fileType *string) (*MultimediaItem, error) {
@@ -32,6 +35,9 @@ func NewMultimediaItem(bucket *string, filename *string, fileType *string) (*Mul
 	if err != nil {
 		return nil, err
 	}
+
+	currentDate := time.Now().Format(time.RFC3339)
+	multimediaItem.CreatedAt = &currentDate
 
 	return multimediaItem, nil
 }
@@ -75,15 +81,16 @@ func (manager *AWSPersistenceManager) Store(item *MultimediaItem) error {
 	input := dynamodb.PutItemInput{
 		TableName: manager.TableName,
 		Item: map[string]*dynamodb.AttributeValue{
-			"id":       &dynamodb.AttributeValue{S: &ID},
-			"bucket":   &dynamodb.AttributeValue{S: item.Bucket},
-			"filename": &dynamodb.AttributeValue{S: item.Filename},
+			"id":         &dynamodb.AttributeValue{S: &ID},
+			"bucket":     &dynamodb.AttributeValue{S: item.Bucket},
+			"filename":   &dynamodb.AttributeValue{S: item.Filename},
+			"created_at": &dynamodb.AttributeValue{S: item.CreatedAt},
 		},
 	}
 
 	_, err := manager.DynamoDB.PutItem(&input)
 
-	if err != nil {
+	if err == nil {
 		// TODO make a copy of the real object and returns it
 		item.ID = &ID
 	}

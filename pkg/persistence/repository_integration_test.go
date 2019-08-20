@@ -13,6 +13,7 @@ import (
 var runIntegrationTest = os.Getenv("INTEGRATION_TEST")
 var awsRegion = os.Getenv("AWS_REGION")
 var tableName = "example"
+var insertedId = ""
 
 func TestIntegrationAWSPersistenceManager_Store(t *testing.T) {
 	if shouldSkip() {
@@ -42,6 +43,8 @@ func TestIntegrationAWSPersistenceManager_Store(t *testing.T) {
 		t.Errorf("Store() error = %+v", err.Error())
 		return
 	}
+
+	insertedId = *item.ID
 }
 
 func TestIntegrationAWSPersistenceManager_Remove(t *testing.T) {
@@ -49,7 +52,7 @@ func TestIntegrationAWSPersistenceManager_Remove(t *testing.T) {
 		return
 	}
 
-	uuid := "de86e755-a76f-459b-a3d4-f3feac373617"
+	uuid := insertedId
 	provider, err := NewDynamoDBRepository(&tableName, dynamodb.New(newSession()))
 
 	if err != nil {
