@@ -197,7 +197,7 @@ func (dynamo *DynamoDBSuccess) PutItem(input *dynamodb.PutItemInput) (*dynamodb.
 		return nil, InvalidArguments{Message: aws.String("TableName can not be nil")}
 	}
 
-	if input.Item["id"].S == nil || input.Item["bucket"].S == nil || input.Item["filename"].S == nil || input.Item["created_at"].S == nil || input.Item["type"].S == nil {
+	if input.Item["id"].S == nil || input.Item["bucket"].S == nil || input.Item["filename"].S == nil || input.Item["createdAt"].S == nil || input.Item["type"].S == nil {
 		return nil, InvalidArguments{Message: aws.String("Some Attribute were not send to dynamo")}
 	}
 
@@ -210,6 +210,14 @@ func (dynamo *DynamoDBSuccess) DeleteItem(input *dynamodb.DeleteItemInput) (*dyn
 	}
 
 	return &dynamodb.DeleteItemOutput{}, nil
+}
+
+func (dynamo *DynamoDBSuccess) GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
+	return &dynamodb.GetItemOutput{}, nil
+}
+
+func (dynamo *DynamoDBSuccess) Query(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error) {
+	return &dynamodb.QueryOutput{}, nil
 }
 
 type InternalServerError struct{}
@@ -225,5 +233,13 @@ func (dynamo *DynamoDBFail) PutItem(input *dynamodb.PutItemInput) (*dynamodb.Put
 }
 
 func (dynamo *DynamoDBFail) DeleteItem(input *dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error) {
+	return nil, InternalServerError{}
+}
+
+func (dynamo *DynamoDBFail) GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
+	return nil, InternalServerError{}
+}
+
+func (dynamo *DynamoDBFail) Query(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error) {
 	return nil, InternalServerError{}
 }

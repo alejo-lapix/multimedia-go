@@ -219,6 +219,9 @@ func (repository ServerErrorRepository) Store(item *persistence.MultimediaItem) 
 func (repository ServerErrorRepository) Find(ID *string) (*persistence.MultimediaItem, error) {
 	return nil, InternalServerError{}
 }
+func (repository ServerErrorRepository) FindMany(ids []*string) ([]*persistence.MultimediaItem, error) {
+	return nil, InternalServerError{}
+}
 func (repository ServerErrorRepository) Remove(ID *string) error {
 	return InternalServerError{}
 }
@@ -230,6 +233,9 @@ func (repository SuccessRepository) Store(item *persistence.MultimediaItem) erro
 }
 func (repository SuccessRepository) Find(ID *string) (*persistence.MultimediaItem, error) {
 	return &persistence.MultimediaItem{ID: ID}, nil
+}
+func (repository SuccessRepository) FindMany(ids []*string) ([]*persistence.MultimediaItem, error) {
+	return make([]*persistence.MultimediaItem, 0), nil
 }
 func (repository SuccessRepository) Remove(ID *string) error {
 	return nil
@@ -243,6 +249,9 @@ func (repository EmptyRepository) Store(item *persistence.MultimediaItem) error 
 func (repository EmptyRepository) Find(ID *string) (*persistence.MultimediaItem, error) {
 	return nil, nil
 }
+func (repository EmptyRepository) FindMany(ids []*string) ([]*persistence.MultimediaItem, error) {
+	return make([]*persistence.MultimediaItem, 0), nil
+}
 func (repository EmptyRepository) Remove(ID *string) error {
 	return InternalServerError{}
 }
@@ -254,6 +263,9 @@ func (repository FailRemovingRepository) Store(item *persistence.MultimediaItem)
 }
 func (repository FailRemovingRepository) Find(ID *string) (*persistence.MultimediaItem, error) {
 	return &persistence.MultimediaItem{ID: ID}, nil
+}
+func (repository FailRemovingRepository) FindMany(ids []*string) ([]*persistence.MultimediaItem, error) {
+	return make([]*persistence.MultimediaItem, 0), nil
 }
 func (repository FailRemovingRepository) Remove(ID *string) error {
 	return InternalServerError{}

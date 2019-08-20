@@ -1,9 +1,10 @@
 package src
 
 import (
+	"io"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"io"
 )
 
 type SuccessCloser struct{}
@@ -37,6 +38,10 @@ func (c *SuccessMockS3) GetObject(input *s3.GetObjectInput) (*s3.GetObjectOutput
 	}, nil
 }
 
+func (c *SuccessMockS3) DeleteObject(input *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error) {
+	return &s3.DeleteObjectOutput{}, nil
+}
+
 type FailMockS3 struct{}
 
 func (c FailMockS3) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
@@ -45,4 +50,8 @@ func (c FailMockS3) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutput, er
 
 func (c *FailMockS3) GetObject(input *s3.GetObjectInput) (*s3.GetObjectOutput, error) {
 	return nil, ClientError{Message: "Get Object Error"}
+}
+
+func (c *FailMockS3) DeleteObject(input *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error) {
+	return nil, ClientError{Message: "Delete Object Error"}
 }

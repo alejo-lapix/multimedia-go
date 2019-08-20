@@ -56,7 +56,7 @@ type Removable interface {
 
 type Findable interface {
 	Find(ID *string) (*MultimediaItem, error)
-	FindMany([]string) (*[]MultimediaItem, error)
+	FindMany([]*string) ([]*MultimediaItem, error)
 }
 
 type BasicRepository interface {
