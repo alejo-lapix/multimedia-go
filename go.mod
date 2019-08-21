@@ -1,4 +1,4 @@
-module multimedia
+module github.com/alejo-lapix/multimedia-go
 
 go 1.12
 
