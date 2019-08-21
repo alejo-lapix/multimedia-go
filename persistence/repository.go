@@ -27,6 +27,11 @@ type MultimediaItem struct {
 	CreatedAt *string
 }
 
+// Key returns the primary value
+func (item MultimediaItem) Key() *string {
+	return item.ID
+}
+
 func NewMultimediaItem(bucket, filename, fileType *string) (*MultimediaItem, error) {
 	multimediaItem := &MultimediaItem{
 		Bucket:   bucket,
