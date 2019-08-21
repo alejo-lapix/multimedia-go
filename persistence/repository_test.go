@@ -1,4 +1,4 @@
-package persitence
+package persistence
 
 import (
 	"reflect"

@@ -3,6 +3,7 @@ module github.com/alejo-lapix/multimedia-go
 go 1.12
 
 require (
+	github.com/alejo-lapix/example v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.23.3
 	github.com/go-playground/locales v0.12.1 // indirect
 	github.com/go-playground/universal-translator v0.16.0 // indirect
