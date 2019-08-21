@@ -20,11 +20,11 @@ const (
 )
 
 type MultimediaItem struct {
-	ID        *string
-	Bucket    *string `validate:"required,url"`
-	Filename  *string `validate:"required"`
-	Type      *string `validate:"required,oneof=sound image pdf"`
-	CreatedAt *string
+	ID        *string `json:"id"`
+	Bucket    *string `json:"bucket" validate:"required,url"`
+	Filename  *string `json:"filename" validate:"required"`
+	Type      *string `json:"type" validate:"required,oneof=sound image pdf"`
+	CreatedAt *string `json:"createdAt"`
 }
 
 // Key returns the primary value
@@ -101,13 +101,15 @@ func (manager *AWSPersistenceManager) Store(item *MultimediaItem) error {
 	ID := uuid.New().String()
 
 	input := dynamodb.PutItemInput{
-		TableName: manager.TableName,
+		TableName:                manager.TableName,
+		ConditionExpression:      aws.String("attribute_not_exists(:key)"),
+		ExpressionAttributeNames: map[string]*string{":key": aws.String("id")},
 		Item: map[string]*dynamodb.AttributeValue{
-			"id":        &dynamodb.AttributeValue{S: &ID},
-			"bucket":    &dynamodb.AttributeValue{S: item.Bucket},
-			"filename":  &dynamodb.AttributeValue{S: item.Filename},
-			"type":      &dynamodb.AttributeValue{S: item.Type},
-			"createdAt": &dynamodb.AttributeValue{S: item.CreatedAt},
+			"id":        {S: &ID},
+			"bucket":    {S: item.Bucket},
+			"filename":  {S: item.Filename},
+			"type":      {S: item.Type},
+			"createdAt": {S: item.CreatedAt},
 		},
 	}
 
@@ -123,9 +125,7 @@ func (manager *AWSPersistenceManager) Store(item *MultimediaItem) error {
 
 func (manager *AWSPersistenceManager) Remove(ID *string) error {
 	_, err := manager.DynamoDB.DeleteItem(&dynamodb.DeleteItemInput{
-		Key: map[string]*dynamodb.AttributeValue{
-			"id": &dynamodb.AttributeValue{S: ID},
-		},
+		Key:       map[string]*dynamodb.AttributeValue{"id": {S: ID}},
 		TableName: manager.TableName,
 	})
 
@@ -134,7 +134,7 @@ func (manager *AWSPersistenceManager) Remove(ID *string) error {
 
 func (manager *AWSPersistenceManager) Find(ID *string) (*MultimediaItem, error) {
 	output, err := manager.DynamoDB.GetItem(&dynamodb.GetItemInput{
-		Key:       map[string]*dynamodb.AttributeValue{"id": &dynamodb.AttributeValue{S: ID}},
+		Key:       map[string]*dynamodb.AttributeValue{"id": {S: ID}},
 		TableName: manager.TableName,
 	})
 
