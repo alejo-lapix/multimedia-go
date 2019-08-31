@@ -3,11 +3,12 @@ package service
 import (
 	"fmt"
 	"io/ioutil"
-	persistence "multimedia/pkg/persistence"
 	"net/http"
 	"os"
 	"path"
 	"time"
+
+	"github.com/alejo-lapix/multimedia-go/persistence"
 
 	"github.com/google/uuid"
 )

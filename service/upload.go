@@ -2,9 +2,9 @@ package service
 
 import (
 	"fmt"
-	"multimedia/pkg/files"
-	persistence "multimedia/pkg/persistence"
 
+	"github.com/alejo-lapix/multimedia-go/files"
+	"github.com/alejo-lapix/multimedia-go/persistence"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/s3"
 

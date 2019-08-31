@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"io/ioutil"
 	"mime/multipart"
-	persistence "multimedia/pkg/persistence"
 	"net/http"
 	"os"
 	"runtime"
 	"testing"
+
+	"github.com/alejo-lapix/multimedia-go/persistence"
 
 	"github.com/aws/aws-sdk-go/aws"
 )

@@ -1,9 +1,10 @@
 package service
 
 import (
-	"multimedia/pkg/files"
-	persistence "multimedia/pkg/persistence"
 	"testing"
+
+	"github.com/alejo-lapix/multimedia-go/files"
+	"github.com/alejo-lapix/multimedia-go/persistence"
 
 	"github.com/aws/aws-sdk-go/aws"
 )
