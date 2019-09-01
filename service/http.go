@@ -48,7 +48,7 @@ func (uploader *IOFileUploader) MoveFile(ioReader io.Reader, fileName string, fi
 
 	ID := uuid.New().ID()
 	filePath := temporalFile.Name()
-	newFileName := fmt.Sprintf("%v-%v.%v", time.Now().Format("20060102150405"), ID, fileExtension)
+	newFileName := fmt.Sprintf("%v-%v%v", time.Now().Format("20060102150405"), ID, fileExtension)
 
 	item, err := uploader.Uploader.Upload(&filePath, &newFileName)
 

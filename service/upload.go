@@ -62,7 +62,13 @@ func NewAWSUploader(tableName, bucket, region *string) (*AWSUploader, error) {
 }
 
 func (uploader *AWSUploader) Upload(filename, destination *string) (*persistence.MultimediaItem, error) {
-	bucket := fmt.Sprintf("https://%v.s3-%v.amazonaws.com", uploader.Bucket, uploader.Region)
+	urlRegion := ""
+
+	if *uploader.Region != "us-east-1" {
+		urlRegion = fmt.Sprintf("-%v", *uploader.Region)
+	}
+
+	bucket := fmt.Sprintf("https://%v.s3%v.amazonaws.com", *uploader.Bucket, urlRegion)
 	fileType, err := getFileType(filename)
 
 	if err != nil {

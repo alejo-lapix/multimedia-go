@@ -33,7 +33,10 @@ func (item MultimediaItem) Key() *string {
 }
 
 func NewMultimediaItem(bucket, filename, fileType *string) (*MultimediaItem, error) {
+	id := uuid.New().String()
+
 	multimediaItem := &MultimediaItem{
+		ID:       &id,
 		Bucket:   bucket,
 		Filename: filename,
 		Type:     fileType,
