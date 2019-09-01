@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -16,6 +17,46 @@ import (
 type HttpFileUploader struct {
 	Uploader      Uploader
 	MaxMBUploaded int64
+}
+
+type IOFileUploader struct {
+	Uploader Uploader
+}
+
+func (uploader *IOFileUploader) MoveFile(ioReader io.Reader, fileName string, fileSize int64) (*persistence.MultimediaItem, error) {
+	buffer := make([]byte, fileSize)
+	fileExtension := path.Ext(fileName)
+	temporalFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("upload-*%v", fileExtension))
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer temporalFile.Close()
+
+	_, err = ioReader.Read(buffer)
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = temporalFile.Write(buffer)
+
+	if err != nil {
+		return nil, err
+	}
+
+	ID := uuid.New().ID()
+	filePath := temporalFile.Name()
+	newFileName := fmt.Sprintf("%v-%v.%v", time.Now().Format("20060102150405"), ID, fileExtension)
+
+	item, err := uploader.Uploader.Upload(&filePath, &newFileName)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return item, nil
 }
 
 // MoveFile moves a file to the given Uploader configuration

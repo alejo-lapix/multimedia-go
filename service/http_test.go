@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -173,4 +174,67 @@ func newFileUploadRequest(uri string, params map[string]string, paramName, path 
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 
 	return req, nil
+}
+
+func TestIOFileUploader_MoveFile(t *testing.T) {
+	thisFileReader, name, size := thisFileIOReader()
+	type fields struct {
+		Uploader Uploader
+	}
+	type args struct {
+		ioReader io.Reader
+		fileName string
+		fileSize int64
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *persistence.MultimediaItem
+		wantErr bool
+	}{
+		{
+			name: "Uploads a file from IOFileUploader",
+			fields: fields{
+				Uploader: &SuccessUploader{},
+			},
+			args: args{
+				ioReader: thisFileReader,
+				fileName: name,
+				fileSize: size,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			uploader := &IOFileUploader{
+				Uploader: tt.fields.Uploader,
+			}
+			got, err := uploader.MoveFile(tt.args.ioReader, tt.args.fileName, tt.args.fileSize)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("MoveFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got == nil {
+				t.Errorf("MoveFile() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func thisFileIOReader() (file io.Reader, filename string, size int64) {
+	ioReader, err := os.Open(filePath)
+
+	if err != nil {
+		panic(err)
+	}
+
+	stats, err := os.Stat(filePath)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return ioReader, "http_test.go", stats.Size()
 }
