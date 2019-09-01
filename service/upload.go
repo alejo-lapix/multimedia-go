@@ -105,24 +105,5 @@ func (err NotFoundError) Error() string {
 }
 
 func (uploader *AWSUploader) Delete(ID *string) error {
-	item, err := uploader.Repository.Find(ID)
-
-	if err != nil {
-		return err
-	}
-
-	if item == nil {
-		return NotFoundError{Message: "Item could not be find"}
-	}
-
-	err = uploader.Storage.Remove(item.Filename)
-
-	if err != nil {
-		return err
-	}
-
-	// The item its already deleted, does it matter if it throws an error?
-	_ = uploader.Repository.Remove(ID)
-
-	return nil
+	return uploader.Storage.Remove(ID)
 }
