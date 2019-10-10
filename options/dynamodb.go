@@ -7,7 +7,7 @@ import (
 
 type DynamoDBPageOptionRepository struct {
 	DynamoDB  *dynamodb.DynamoDB
-	tableName string
+	TableName string
 }
 
 func (repository *DynamoDBPageOptionRepository) Store(option *PageOption) error {
@@ -19,7 +19,7 @@ func (repository *DynamoDBPageOptionRepository) Store(option *PageOption) error 
 
 	_, err = repository.DynamoDB.PutItem(&dynamodb.PutItemInput{
 		Item:      item,
-		TableName: &repository.tableName,
+		TableName: &repository.TableName,
 	})
 
 	return err
@@ -29,7 +29,7 @@ func (repository *DynamoDBPageOptionRepository) FindByName(name string) (*PageOp
 	item := &PageOption{}
 	output, err := repository.DynamoDB.GetItem(&dynamodb.GetItemInput{
 		Key:       map[string]*dynamodb.AttributeValue{"name": {S: &name}},
-		TableName: &repository.tableName,
+		TableName: &repository.TableName,
 	})
 
 	if err != nil {
